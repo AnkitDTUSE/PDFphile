@@ -1,0 +1,24 @@
+{
+  "name": "pdfphile",
+  "version": "1.0.0",
+  "description": "a tool to convert various file types to PDF",
+  "license": "ISC",
+  "author": "ANKIT PANCHAL",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon -r dotenv/config index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.7.0",
+    "multer": "^2.1.1",
+    "nodemon": "^3.1.14"
+  }
+}
