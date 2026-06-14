@@ -11,6 +11,8 @@ import libre from "libreoffice-convert";
 import { promisify } from "util";
 import fs from "fs";
 import puppeteer from "puppeteer";
+import { exec } from "child_process";
+import { stderr } from "process";
 
 libre.convertAsync = promisify(libre.convert);
 const fsPromises = fs.promises;
@@ -110,4 +112,31 @@ const convertHtml = asyncHandler(async (req, res) => {
   }
 });
 
-export { convertDocx, convertHtml };
+const convertDrawio = asyncHandler(async (req, res) => {
+  const file = req.file;
+
+  if (!file) throw new apiError(400, "Upload a file to convert");
+
+  const inputPath = req.file?.path;
+  const outputDir = path.join(os.homedir(), "Downloads");
+  const outputFileName = `${path.parse(req.file.originalname).name}.pdf`;
+  const outputPath = path.join(outputDir, outputFileName);
+
+  const cmd = `drawio -x -f pdf --page-format A4 --all-pages -o "${outputPath}" "${inputPath}"`;
+  
+  exec(cmd, (err, stdout, stderr) => {
+    if (err) {
+      cleanupTempFiles(file, outputPath);
+      throw new apiError(500, "error while converting Drawio file");
+    }
+
+    res.download(outputPath, (err) => {
+      if (err) {
+        console.error("PDF conversion failed", err);
+      }
+      cleanupTempFiles(file, outputPath);
+    });
+  });
+});
+
+export { convertDocx, convertHtml, convertDrawio };
