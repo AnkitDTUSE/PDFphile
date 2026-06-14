@@ -7,8 +7,13 @@ import { upload } from "../middleware/multer.middleware.js";
 import path from "path";
 import os from "os";
 import { fileURLToPath } from "url";
-import docxConverter from "docx-pdf";
+import libre from "libreoffice-convert";
+import { promisify } from "util";
 import fs from "fs";
+import puppeteer from "puppeteer";
+
+libre.convertAsync = promisify(libre.convert);
+const fsPromises = fs.promises;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,28 +34,80 @@ const convertDocx = asyncHandler(async (req, res) => {
   const file = req.file;
   if (!file) throw new apiError(400, "upload a file for converison");
 
-  const outputDir = os.homedir();
+  const ext = ".pdf";
+  const inputPath = req.file.path;
+  const outputDir = path.join(os.homedir(), "Downloads");
   const outputFileName = `${path.parse(req.file.originalname).name}.pdf`;
-  const outputPath = path.join(outputDir, "Downloads", outputFileName);
+  const outputPath = path.join(outputDir, outputFileName);
 
-  docxConverter(req.file.path, outputPath, (err, result) => {
+  await fsPromises.mkdir(outputDir, { recursive: true });
+
+  const docxBuf = await fsPromises.readFile(inputPath);
+  const pdfBuf = await libre.convertAsync(docxBuf, ext, undefined);
+
+  await fsPromises.writeFile(outputPath, pdfBuf);
+
+  res.download(outputPath, (err) => {
     if (err) {
-      cleanupTempFiles(file, outputPath);
-      console.error(err);
-      return res
-        .status(500)
-        .json(new apiResponse(500, {}, "PDF conversion failed"));
+      console.error("PDF conversion failed", err);
     }
-
-    res.download(outputPath, (downloadErr) => {
-      if (downloadErr) {
-        console.error(downloadErr);
-      }
-      cleanupTempFiles(file, outputPath);
-      console.log("file is downloading");
-    });
-    console.log("result" + result);
+    cleanupTempFiles(file, outputPath);
   });
 });
 
-export { convertDocx };
+const convertHtml = asyncHandler(async (req, res) => {
+  let htmlContent = "";
+  const inputPath = req.file?.path;
+  const file = req.file;
+
+  if (file) {
+    htmlContent = fs.readFileSync(inputPath, "utf-8");
+  } else if (req.body.html) {
+    htmlContent = req.body.html;
+  } else {
+    throw new apiError(400, "HTML Content is required to convert");
+  }
+  const outputDir = path.join(os.homedir(), "Downloads");
+  const outputFileName = `${path.parse(req.file.originalname).name}.pdf`;
+  const outputPath = path.join(outputDir, outputFileName);
+
+  let browser;
+
+  try {
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+
+    const page = await browser.newPage();
+
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+
+    await page.pdf({
+      path: outputPath,
+      format: "A4",
+      printBackground: true,
+      margin: {
+        top: "20mm",
+        bottom: "20mm",
+        left: "15mm",
+        right: "15mm",
+      },
+    });
+
+    await browser.close();
+
+    res.download(outputPath, (err) => {
+      if (err) {
+        console.error("PDF conversion failed", err);
+      }
+      cleanupTempFiles(file, outputPath);
+    });
+  } catch (err) {
+    if (browser) await browser.close();
+    cleanupTempFiles(file, outputPath);
+    throw new apiError(500, "error while converting HTML file");
+  }
+});
+
+export { convertDocx, convertHtml };
