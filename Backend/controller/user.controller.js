@@ -7,6 +7,11 @@ import { upload } from "../middleware/multer.middleware.js";
 import { User } from "../models/user.model.js";
 import { File } from "../models/file.model.js";
 
+const options = {
+  httpOnly: true,
+  secure: true,
+};
+
 const generateAccessAndRefershToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -75,6 +80,7 @@ const loginHandler = asyncHandler(async (req, res) => {
     user._id,
   );
 
+
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken",
   );
@@ -92,4 +98,22 @@ const loginHandler = asyncHandler(async (req, res) => {
     );
 });
 
-export { loginHandler, registerUser };
+const logoutHandler = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        refreshToken: undefined,
+      },
+    },
+    { returnDocument: "after" },
+  );
+
+  return res
+    .status(200)
+    .clearCookie("accessToken".options)
+    .clearCookie("refreshToken", options)
+    .json(new apiResponse(200, {}, "Logout successful"));
+});
+
+export { loginHandler, registerUser, logoutHandler };
