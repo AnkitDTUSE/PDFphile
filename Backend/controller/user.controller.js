@@ -3,7 +3,6 @@ import { apiError } from "../utils/apiError.util.js";
 import { apiResponse } from "../utils/apiResponse.util.js";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
-import { upload } from "../middleware/multer.middleware.js";
 import { User } from "../models/user.model.js";
 import { File } from "../models/file.model.js";
 
