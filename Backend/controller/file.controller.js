@@ -11,27 +11,13 @@ import libre from "libreoffice-convert";
 import { promisify } from "util";
 import fs from "fs";
 import puppeteer from "puppeteer";
-import { mdToPdf } from 'md-to-pdf';
+import { mdToPdf } from "md-to-pdf";
 import { exec } from "child_process";
 import { stderr, stdout } from "process";
+import { cleanupTempFiles } from "../utils/cleanup.Util.js";
 
 libre.convertAsync = promisify(libre.convert);
 const fsPromises = fs.promises;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const cleanupTempFiles = (file, outputPath) => {
-  [file.path, outputPath].forEach((filePath) => {
-    if (!filePath) return;
-
-    fs.unlink(filePath, (unlinkErr) => {
-      if (unlinkErr) {
-        console.error("Temp file cleanup failed:", unlinkErr);
-      }
-    });
-  });
-};
 
 const convertDocx = asyncHandler(async (req, res) => {
   const file = req.file;
@@ -212,4 +198,10 @@ const convertMarkdown = asyncHandler(async (req, res) => {
     throw new apiError(500, "error while converting md to pdf");
   }
 });
-export { convertDocx, convertHtml, convertDrawio, convertMermaid,convertMarkdown };
+export {
+  convertDocx,
+  convertHtml,
+  convertDrawio,
+  convertMermaid,
+  convertMarkdown,
+};
