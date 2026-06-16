@@ -11,8 +11,9 @@ import libre from "libreoffice-convert";
 import { promisify } from "util";
 import fs from "fs";
 import puppeteer from "puppeteer";
+import { mdToPdf } from 'md-to-pdf';
 import { exec } from "child_process";
-import { stderr } from "process";
+import { stderr, stdout } from "process";
 
 libre.convertAsync = promisify(libre.convert);
 const fsPromises = fs.promises;
@@ -123,7 +124,7 @@ const convertDrawio = asyncHandler(async (req, res) => {
   const outputPath = path.join(outputDir, outputFileName);
 
   const cmd = `drawio -x -f pdf --page-format A4 --all-pages -o "${outputPath}" "${inputPath}"`;
-  
+
   exec(cmd, (err, stdout, stderr) => {
     if (err) {
       cleanupTempFiles(file, outputPath);
@@ -139,4 +140,76 @@ const convertDrawio = asyncHandler(async (req, res) => {
   });
 });
 
-export { convertDocx, convertHtml, convertDrawio };
+const convertMermaid = asyncHandler(async (req, res) => {
+  const file = req.file;
+
+  if (!file) throw new apiError(400, "Upload a file to convert");
+
+  const inputPath = req.file?.path;
+  const outputDir = path.join(os.homedir(), "Downloads");
+  const outputFileName = `${path.parse(req.file.originalname).name}.pdf`;
+  const outputPath = path.join(outputDir, outputFileName);
+
+  const cmd = `mmdc -i "${inputPath}" -o "${outputPath}" -e pdf -w 595 -H 842 `;
+
+  exec(cmd, (err, stdout, stderr) => {
+    if (err) {
+      cleanupTempFiles(file, outputPath);
+      throw new apiError(500, "error while converting mermaid to pdf");
+    }
+
+    res.download(outputPath, (err) => {
+      if (err) {
+        console.error("mermaid to PDF conversion Failed", err);
+      }
+
+      cleanupTempFiles(file, outputPath);
+    });
+  });
+});
+
+const convertMarkdown = asyncHandler(async (req, res) => {
+  const file = req.file;
+
+  if (!file) throw new apiError(400, "Upload a file to convert");
+
+  const inputPath = file.path;
+  const outputDir = path.join(os.homedir(), "Downloads");
+  const outputPath = path.join(
+    outputDir,
+    `${path.parse(file.originalname).name}.pdf`,
+  );
+
+  try {
+    const mdContent = fs.readFileSync(inputPath, "utf-8");
+
+    const options = {
+      pdf_options: {
+        format: "A4",
+        margin: {
+          top: "20mm",
+          right: "20mm",
+          bottom: "20mm",
+          left: "20mm",
+        },
+        printBackground: true, // Ensures background colors for standard code blocks render correctly
+      },
+    };
+
+    const pdfBuffer = await mdToPdf({ content: mdContent }, options);
+
+    fs.writeFileSync(outputPath, pdfBuffer.content);
+
+    res.download(outputPath, (err) => {
+      if (err) {
+        console.error("markdown to PDF conversion failed", err);
+      }
+      cleanupTempFiles(file, outputPath);
+    });
+  } catch (err) {
+    cleanupTempFiles(file, outputPath);
+    console.error("error wile converting markdown to pdf");
+    throw new apiError(500, "error while converting md to pdf");
+  }
+});
+export { convertDocx, convertHtml, convertDrawio, convertMermaid,convertMarkdown };

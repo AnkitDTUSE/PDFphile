@@ -1,0 +1,23 @@
+graph TD
+    %% Define the nodes and their text/shapes
+    Start([Start Request]) --> Auth{Is User Authed?}
+    
+    Auth -- Yes --> FetchData[Fetch Profile Data]
+    Auth -- No --> Redirect[/Redirect to Login/]
+    
+    FetchData --> CheckCache{In Cache?}
+    
+    CheckCache -- Yes --> ServeCache[(Read DB Cache)]
+    CheckCache -- No --> FetchDB[(Query Main Database)]
+    
+    ServeCache --> Render[Render Dashboard]
+    FetchDB --> UpdateCache[Write to Cache]
+    UpdateCache --> Render
+    
+    Render --> End([End Request])
+
+    %% Styling individual nodes or groups
+    style Start fill:#4CAF50,stroke:#388E3C,stroke-width:2px,color:#fff
+    style End fill:#F44336,stroke:#D32F2F,stroke-width:2px,color:#fff
+    style Auth fill:#FF9800,stroke:#F57C00,stroke-width:2px,color:#fff
+    style CheckCache fill:#FF9800,stroke:#F57C00,stroke-width:2px,color:#fff
