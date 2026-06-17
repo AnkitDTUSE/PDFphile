@@ -3,6 +3,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.route.js";
 import fileRouter from "./routes/file.route.js";
+import aiRouter from "./routes/ai.route.js";
+
 const app = express();
 
 app.use(
@@ -22,5 +24,8 @@ app.use("/api/v1/user", userRouter);
 
 //file route
 app.use("/api/v1/file", fileRouter);
+
+//ai route
+app.use("/api/v1/ai", aiRouter);
 
 export { app };
