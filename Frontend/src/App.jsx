@@ -148,7 +148,7 @@ function AppContent() {
   };
 
   return (
-    <div className="flex min-h-screen bg-neutral-950 text-neutral-100 font-sans">
+    <div className="flex min-h-screen bg-slate-950 text-neutral-100 font-sans">
       <Sidebar
         user={user}
         onLogOut={handleLogOut}
