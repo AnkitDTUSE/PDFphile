@@ -7,6 +7,21 @@ import fs from "fs";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
 
+const generateContentWithFallback = async (payload) => {
+  try {
+    return await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      ...payload,
+    });
+  } catch (err) {
+    console.warn("gemini-2.5-flash failed, falling back to gemini-1.5-flash:", err.message || err);
+    return await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      ...payload,
+    });
+  }
+};
+
 const createSummary = asyncHandler(async (req, res) => {
   const file = req.file;
 
@@ -32,8 +47,7 @@ const createSummary = asyncHandler(async (req, res) => {
       - **Critical Takeaways/Action Items**: What are the most important conclusions or takeaways?
       Ensure the tone is professional, clear, and objective.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+    const response = await generateContentWithFallback({
       contents: [pdfPart, prompt],
     });
 
@@ -57,4 +71,44 @@ const createSummary = asyncHandler(async (req, res) => {
   }
 });
 
-export { createSummary };
+const chat = asyncHandler(async (req, res) => {
+  const { message, history } = req.body;
+
+  if (!message) {
+    throw new apiError(400, "Message is required");
+  }
+
+  try {
+    let contents = [];
+    if (history && Array.isArray(history)) {
+      history.forEach((item) => {
+        contents.push({
+          role: item.role === "user" ? "user" : "model",
+          parts: [{ text: item.text }],
+        });
+      });
+    }
+    contents.push({
+      role: "user",
+      parts: [{ text: message }],
+    });
+
+    const response = await generateContentWithFallback({
+      contents: contents,
+    });
+
+    return res
+      .status(200)
+      .json(
+        new apiResponse(200, { reply: response.text }, "chat response generated"),
+      );
+  } catch (err) {
+    console.error("gemini chat error:", err);
+    throw new apiError(
+      500,
+      err?.message || "The AI model failed to generate chat response.",
+    );
+  }
+});
+
+export { createSummary, chat };

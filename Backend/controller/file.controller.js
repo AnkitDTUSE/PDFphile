@@ -72,15 +72,20 @@ const convertHtml = asyncHandler(async (req, res) => {
 
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
+    const pageSize = req.body.pageSize || "A4";
+    const orientation = req.body.orientation || "portrait";
+    const marginSize = req.body.marginSize || "20mm";
+
     await page.pdf({
       path: outputPath,
-      format: "A4",
+      format: pageSize,
+      landscape: orientation === "landscape",
       printBackground: true,
       margin: {
-        top: "20mm",
-        bottom: "20mm",
-        left: "15mm",
-        right: "15mm",
+        top: marginSize,
+        bottom: marginSize,
+        left: marginSize,
+        right: marginSize,
       },
     });
 
@@ -136,7 +141,27 @@ const convertMermaid = asyncHandler(async (req, res) => {
   const outputFileName = `${path.parse(req.file.originalname).name}.pdf`;
   const outputPath = path.join(outputDir, outputFileName);
 
-  const cmd = `mmdc -i "${inputPath}" -o "${outputPath}" -e pdf -w 595 -H 842 `;
+  const pageSize = req.body.pageSize || "A4";
+  const orientation = req.body.orientation || "portrait";
+
+  let width = 595;
+  let height = 842;
+
+  if (pageSize.toLowerCase() === "letter") {
+    width = 612;
+    height = 792;
+  } else if (pageSize.toLowerCase() === "legal") {
+    width = 612;
+    height = 1008;
+  }
+
+  if (orientation === "landscape") {
+    const temp = width;
+    width = height;
+    height = temp;
+  }
+
+  const cmd = `mmdc -i "${inputPath}" -o "${outputPath}" -e pdf -w ${width} -H ${height} `;
 
   exec(cmd, (err, stdout, stderr) => {
     if (err) {
@@ -169,14 +194,19 @@ const convertMarkdown = asyncHandler(async (req, res) => {
   try {
     const mdContent = fs.readFileSync(inputPath, "utf-8");
 
+    const pageSize = req.body.pageSize || "A4";
+    const orientation = req.body.orientation || "portrait";
+    const marginSize = req.body.marginSize || "20mm";
+
     const options = {
       pdf_options: {
-        format: "A4",
+        format: pageSize,
+        landscape: orientation === "landscape",
         margin: {
-          top: "20mm",
-          right: "20mm",
-          bottom: "20mm",
-          left: "20mm",
+          top: marginSize,
+          right: marginSize,
+          bottom: marginSize,
+          left: marginSize,
         },
         printBackground: true, // Ensures background colors for standard code blocks render correctly
       },
