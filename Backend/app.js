@@ -9,7 +9,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "*",
+    origin: "https://pdfphile-1.onrender.com",
     credentials: true,
   }),
 );
