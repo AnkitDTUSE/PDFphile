@@ -4,12 +4,13 @@ import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.route.js";
 import fileRouter from "./routes/file.route.js";
 import aiRouter from "./routes/ai.route.js";
+import { apiResponse } from "./utils/apiResponse.util.js";
 
 const app = express();
 
 app.use(
   cors({
-    origin: "https://pdfphile-1.onrender.com",
+    origin: "http://localhost:5173",
     credentials: true,
   }),
 );
