@@ -18,13 +18,14 @@ import { cleanupTempFiles } from "../utils/cleanup.Util.js";
 
 libre.convertAsync = promisify(libre.convert);
 const fsPromises = fs.promises;
+const execAsync = promisify(exec);
 
 const convertDocx = asyncHandler(async (req, res) => {
   const file = req.file;
   if (!file) throw new apiError(400, "upload a file for converison");
 
   const ext = ".pdf";
-  const inputPath = req.file.path;
+  const inputPath = path.resolve(req.file.path);
   const outputDir = path.join(os.homedir(), "Downloads");
   const outputFileName = `${path.parse(req.file.originalname).name}.pdf`;
   const outputPath = path.join(outputDir, outputFileName);
@@ -46,8 +47,8 @@ const convertDocx = asyncHandler(async (req, res) => {
 
 const convertHtml = asyncHandler(async (req, res) => {
   let htmlContent = "";
-  const inputPath = req.file?.path;
   const file = req.file;
+  const inputPath = file ? path.resolve(file.path) : null;
 
   if (file) {
     htmlContent = fs.readFileSync(inputPath, "utf-8");
@@ -57,8 +58,10 @@ const convertHtml = asyncHandler(async (req, res) => {
     throw new apiError(400, "HTML Content is required to convert");
   }
   const outputDir = path.join(os.homedir(), "Downloads");
-  const outputFileName = `${path.parse(req.file.originalname).name}.pdf`;
+  const outputFileName = `${req.file ? path.parse(req.file.originalname).name : `html-${Date.now()}`}.pdf`;
   const outputPath = path.join(outputDir, outputFileName);
+
+  await fsPromises.mkdir(outputDir, { recursive: true });
 
   let browser;
 
@@ -109,17 +112,20 @@ const convertDrawio = asyncHandler(async (req, res) => {
 
   if (!file) throw new apiError(400, "Upload a file to convert");
 
-  const inputPath = req.file?.path;
+  const inputPath = path.resolve(req.file.path);
   const outputDir = path.join(os.homedir(), "Downloads");
   const outputFileName = `${path.parse(req.file.originalname).name}.pdf`;
   const outputPath = path.join(outputDir, outputFileName);
 
-  const cmd = `drawio -x -f pdf --page-format A4 --all-pages -o "${outputPath}" "${inputPath}"`;
+  await fsPromises.mkdir(outputDir, { recursive: true });
 
-  exec(cmd, (err, stdout, stderr) => {
-    if (err) {
-      cleanupTempFiles(file, outputPath);
-      throw new apiError(500, "error while converting Drawio file");
+  const cmd = `drawio -x -f pdf --all-pages -o "${outputPath}" "${inputPath}" --no-sandbox`;
+
+  try {
+    const { stdout, stderr } = await execAsync(cmd);
+    
+    if (!fs.existsSync(outputPath)) {
+      throw new Error(`Output file was not generated. Stderr: ${stderr || "none"}`);
     }
 
     res.download(outputPath, (err) => {
@@ -128,7 +134,13 @@ const convertDrawio = asyncHandler(async (req, res) => {
       }
       cleanupTempFiles(file, outputPath);
     });
-  });
+  } catch (err) {
+    cleanupTempFiles(file, outputPath);
+    throw new apiError(
+      500,
+      `error while converting Drawio file \n cause ${err.name} \n message ${err.message}`
+    );
+  }
 });
 
 const convertMermaid = asyncHandler(async (req, res) => {
@@ -136,10 +148,12 @@ const convertMermaid = asyncHandler(async (req, res) => {
 
   if (!file) throw new apiError(400, "Upload a file to convert");
 
-  const inputPath = req.file?.path;
+  const inputPath = path.resolve(req.file.path);
   const outputDir = path.join(os.homedir(), "Downloads");
   const outputFileName = `${path.parse(req.file.originalname).name}.pdf`;
   const outputPath = path.join(outputDir, outputFileName);
+
+  await fsPromises.mkdir(outputDir, { recursive: true });
 
   const pageSize = req.body.pageSize || "A4";
   const orientation = req.body.orientation || "portrait";
@@ -161,22 +175,25 @@ const convertMermaid = asyncHandler(async (req, res) => {
     height = temp;
   }
 
-  const cmd = `mmdc -i "${inputPath}" -o "${outputPath}" -e pdf -w ${width} -H ${height} `;
+  const cmd = `mmdc -i "${inputPath}" -o "${outputPath}" -e pdf -w ${width} -H ${height} -p /app/puppeteer-config.json`;
+  
+  try {
+    const { stdout, stderr } = await execAsync(cmd);
 
-  exec(cmd, (err, stdout, stderr) => {
-    if (err) {
-      cleanupTempFiles(file, outputPath);
-      throw new apiError(500, "error while converting mermaid to pdf");
+    if (!fs.existsSync(outputPath)) {
+      throw new Error(`Output file was not generated. Stderr: ${stderr || "none"}`);
     }
 
     res.download(outputPath, (err) => {
       if (err) {
         console.error("mermaid to PDF conversion Failed", err);
       }
-
       cleanupTempFiles(file, outputPath);
     });
-  });
+  } catch (err) {
+    cleanupTempFiles(file, outputPath);
+    throw new apiError(500, `error while converting mermaid to pdf: ${err.message}`);
+  }
 });
 
 const convertMarkdown = asyncHandler(async (req, res) => {
@@ -184,12 +201,14 @@ const convertMarkdown = asyncHandler(async (req, res) => {
 
   if (!file) throw new apiError(400, "Upload a file to convert");
 
-  const inputPath = file.path;
+  const inputPath = path.resolve(file.path);
   const outputDir = path.join(os.homedir(), "Downloads");
   const outputPath = path.join(
     outputDir,
     `${path.parse(file.originalname).name}.pdf`,
   );
+
+  await fsPromises.mkdir(outputDir, { recursive: true });
 
   try {
     const mdContent = fs.readFileSync(inputPath, "utf-8");
@@ -199,6 +218,9 @@ const convertMarkdown = asyncHandler(async (req, res) => {
     const marginSize = req.body.marginSize || "20mm";
 
     const options = {
+      launch_options: {
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      },
       pdf_options: {
         format: pageSize,
         landscape: orientation === "landscape",

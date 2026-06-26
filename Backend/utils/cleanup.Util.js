@@ -1,13 +1,21 @@
 import fs from "fs";
 
 export const cleanupTempFiles = (file, outputPath) => {
-  [file.path, outputPath].forEach((filePath) => {
-    if (!filePath) return;
+  const filePaths = [];
+  if (file && file.path) {
+    filePaths.push(file.path);
+  }
+  if (outputPath) {
+    filePaths.push(outputPath);
+  }
 
-    fs.unlink(filePath, (unlinkErr) => {
-      if (unlinkErr) {
-        console.error("Temp file cleanup failed:", unlinkErr);
-      }
-    });
+  filePaths.forEach((filePath) => {
+    if (fs.existsSync(filePath)) {
+      fs.unlink(filePath, (unlinkErr) => {
+        if (unlinkErr) {
+          console.error("Temp file cleanup failed:", unlinkErr);
+        }
+      });
+    }
   });
 };

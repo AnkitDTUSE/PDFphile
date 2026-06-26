@@ -10,7 +10,11 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://pdfphile-1.onrender.com",
+    origin: [
+      "https://pdfphile-1.onrender.com",
+      "http://localhost:5173",
+      "http://localhost:5173",
+    ],
     credentials: true,
   }),
 );
