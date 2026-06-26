@@ -11,6 +11,7 @@ const app = express();
 app.use(
   cors({
     origin: [
+      "https://pdfphile-v1.onrender.com",
       "https://pdfphile-1.onrender.com",
       "http://localhost:5173",
       "http://localhost:5173",
