@@ -1,4 +1,4 @@
-# PDFphile 📄✨
+# PDFphile 
 
 <p align="center">
   <img src="Frontend/src/assets/logo.png" alt="PDFphile Logo" width="150" height="auto" />
