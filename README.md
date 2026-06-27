@@ -76,8 +76,8 @@ graph LR
     Node --> Chrome[Puppeteer / Headless Chromium]
     Chrome --> Render[Print page.pdf]
     Render --> PDF[Downloadable PDF]
-    style HTML fill:#f9f,stroke:#333,stroke-width:2px
-    style PDF fill:#bbf,stroke:#333,stroke-width:2px
+    style HTML fill:#fff,stroke:#333,stroke-width:2px,color:#000
+    style PDF fill:#fff,stroke:#333,stroke-width:2px,color:#000
 ```
 
 ### 2. Markdown to PDF
@@ -91,8 +91,8 @@ graph LR
     Parser --> HTML[HTML + Injected CSS]
     HTML --> Chrome[Headless Puppeteer]
     Chrome --> PDF[Downloadable PDF]
-    style MD fill:#f9f,stroke:#333,stroke-width:2px
-    style PDF fill:#bbf,stroke:#333,stroke-width:2px
+    style MD fill:#fff,stroke:#333,stroke-width:2px,color:#000
+    style PDF fill:#fff,stroke:#333,stroke-width:2px,color:#000
 ```
 
 ### 3. Mermaid Diagrams to PDF
@@ -105,8 +105,8 @@ graph LR
     CLI --> Chrome[Headless Puppeteer]
     Chrome --> SVG[Render SVG Canvas]
     SVG --> PDF[Downloadable PDF]
-    style Code fill:#f9f,stroke:#333,stroke-width:2px
-    style PDF fill:#bbf,stroke:#333,stroke-width:2px
+    style Code fill:#fff,stroke:#333,stroke-width:2px,color:#000
+    style PDF fill:#fff,stroke:#333,stroke-width:2px,color:#000
 ```
 
 ### 4. Draw.io to PDF (Virtual Display Hack)
@@ -121,8 +121,8 @@ graph LR
     Xvfb --> Electron[drawio-desktop CLI]
     Electron --> Export[Render XML nodes to PDF]
     Export --> PDF[Downloadable PDF]
-    style Drawio fill:#f9f,stroke:#333,stroke-width:2px
-    style PDF fill:#bbf,stroke:#333,stroke-width:2px
+    style Drawio fill:#fff,stroke:#333,stroke-width:2px,color:#000
+    style PDF fill:#fff,stroke:#333,stroke-width:2px,color:#000
 ```
 
 ### 5. Word (`.docx`) to PDF
@@ -136,8 +136,8 @@ graph LR
     LibWrapper --> soffice[Headless LibreOffice]
     soffice --> Export[Translate structures to PDF]
     Export --> PDF[Downloadable PDF]
-    style Docx fill:#f9f,stroke:#333,stroke-width:2px
-    style PDF fill:#bbf,stroke:#333,stroke-width:2px
+    style Docx fill:#fff,stroke:#333,stroke-width:2px,color:#000
+    style PDF fill:#fff,stroke:#333,stroke-width:2px,color:#000
 ```
 
 ---
