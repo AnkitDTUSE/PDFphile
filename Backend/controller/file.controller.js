@@ -68,7 +68,14 @@ const convertHtml = asyncHandler(async (req, res) => {
   try {
     browser = await puppeteer.launch({
       headless: "new",
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--no-zygote",
+        "--single-process",
+      ],
     });
 
     const page = await browser.newPage();
@@ -119,7 +126,7 @@ const convertDrawio = asyncHandler(async (req, res) => {
 
   await fsPromises.mkdir(outputDir, { recursive: true });
 
-  const cmd = `drawio -x -f pdf --all-pages -o "${outputPath}" "${inputPath}" --no-sandbox`;
+  const cmd = `xvfb-run -a drawio -x -f pdf --all-pages -o "${outputPath}" "${inputPath}" --no-sandbox`;
 
   try {
     const { stdout, stderr } = await execAsync(cmd);
@@ -219,7 +226,14 @@ const convertMarkdown = asyncHandler(async (req, res) => {
 
     const options = {
       launch_options: {
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--no-zygote",
+          "--single-process",
+        ],
       },
       pdf_options: {
         format: pageSize,

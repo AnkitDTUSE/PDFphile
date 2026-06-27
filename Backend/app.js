@@ -4,18 +4,33 @@ import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.route.js";
 import fileRouter from "./routes/file.route.js";
 import aiRouter from "./routes/ai.route.js";
-import { apiResponse } from "./utils/apiResponse.util.js";
+import { apiError } from "./utils/apiError.util.js";
 
 const app = express();
 
+const allowedOrigins = [
+  "https://pdfphile.onrender.com",
+  "https://pdfphile-v1.onrender.com",
+  "https://pdfphile-1.onrender.com",
+  "http://localhost:5173",
+];
+
 app.use(
   cors({
-    origin: [
-      "https://pdfphile-v1.onrender.com",
-      "https://pdfphile-1.onrender.com",
-      "http://localhost:5173",
-      "http://localhost:5173",
-    ],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      const envOrigin = process.env.ORIGIN;
+      if (
+        envOrigin === "*" ||
+        (envOrigin && envOrigin.split(",").map(o => o.trim()).indexOf(origin) !== -1) ||
+        allowedOrigins.indexOf(origin) !== -1
+      ) {
+        callback(null, true);
+      } else {
+        callback(new apiError(300, "Not allowed by CORS"));
+      }
+    },
     credentials: true,
   }),
 );
