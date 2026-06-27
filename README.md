@@ -169,7 +169,7 @@ Make sure you have [Docker](https://www.docker.com/) and [Node.js](https://nodej
    ```
 4. Run the container:
    ```bash
-   docker run -p 3000:3000 --env-file .env pdfphile-backend
+   docker run --init --env-file .env -p 3000:3000 --env-file .env pdfphile-backend
    ```
 
 ### 2. Frontend Setup
