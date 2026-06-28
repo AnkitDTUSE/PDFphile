@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { marked } from "marked";
 import mermaid from "mermaid";
-import { 
-  ArrowLeft, 
-  Loader, 
-  Settings2, 
+import {
+  ArrowLeft,
+  Loader,
+  Settings2,
   FileDown,
   Heading1,
   Heading2,
@@ -132,17 +132,17 @@ const MERMAID_TOOLBAR_ITEMS = [
   { icon: Layers, syntax: "subgraph Title\n  \nend", tooltip: "Subgraph" }
 ];
 
-export default function LiveEditorPanel({ 
-  format, 
-  onBack, 
-  onConvertContent, 
-  conversionLoading 
+export default function LiveEditorPanel({
+  format,
+  onBack,
+  onConvertContent,
+  conversionLoading
 }) {
   const [content, setContent] = useState(DEFAULT_TEMPLATES[format] || "");
   const [htmlPreview, setHtmlPreview] = useState("");
   const [svgContent, setSvgContent] = useState("");
   const [mermaidError, setMermaidError] = useState("");
-  
+
   // Custom configuration state
   const [pageSize, setPageSize] = useState("A4");
   const [orientation, setOrientation] = useState("portrait");
@@ -213,14 +213,14 @@ export default function LiveEditorPanel({
       } catch (err) {
         console.error("Mermaid error:", err);
         setMermaidError("Invalid Mermaid diagram syntax");
-        
+
         // Clean up any stray elements appended by mermaid to the document body
         const strayElement = document.getElementById(uniqueId);
         if (strayElement) strayElement.remove();
-        
+
         const bindElement = document.getElementById(`d${uniqueId}`);
         if (bindElement) bindElement.remove();
-        
+
         Array.from(document.body.children).forEach(child => {
           if (child.id && (child.id.includes(uniqueId) || child.id.startsWith("dmermaid"))) {
             child.remove();
@@ -262,23 +262,23 @@ export default function LiveEditorPanel({
   return (
     <div className="flex flex-col h-screen bg-neutral-950 text-neutral-200">
       {/* Top Header bar */}
-      <div className="h-14 border-b border-neutral-850 flex items-center justify-between px-4 md:px-6 bg-neutral-900">
-        <div className="flex items-center space-x-3 md:space-x-4">
+      <div className="h-14 border-b border-neutral-850 flex items-center justify-between px-3 md:px-6 bg-neutral-900">
+        <div className="flex items-center space-x-2 md:space-x-4 min-w-0">
           <button
             onClick={onBack}
-            className="flex items-center space-x-1 md:space-x-2 text-xs text-neutral-400 hover:text-neutral-200 transition"
+            className="flex items-center space-x-1 md:space-x-2 text-xs text-neutral-400 hover:text-neutral-200 transition flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Dashboard</span>
+            <span className="hidden sm:inline">Dashboard</span>
           </button>
-          <div className="h-4 w-px bg-neutral-800"></div>
+          <div className="h-4 w-px bg-neutral-800 flex-shrink-0"></div>
           <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider truncate">
-            {format} Editor
+            {format} <span className="hidden sm:inline">Editor</span>
           </span>
         </div>
 
         {/* Conversion Settings bar */}
-        <div className="flex items-center space-x-2 md:space-x-3 text-xs">
+        <div className="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3 text-xs flex-shrink-0">
           {/* Desktop inline settings */}
           <div className="hidden md:flex items-center space-x-2 border-r border-neutral-800 pr-3">
             <Settings2 className="w-3.5 h-3.5 text-neutral-500" />
@@ -387,21 +387,19 @@ export default function LiveEditorPanel({
       <div className="md:hidden flex border-b border-neutral-850 bg-neutral-900/60">
         <button
           onClick={() => setActiveTab("editor")}
-          className={`flex-1 py-3 text-center text-xs font-semibold border-b-2 transition ${
-            activeTab === "editor"
+          className={`flex-1 py-3 text-center text-xs font-semibold border-b-2 transition ${activeTab === "editor"
               ? "border-neutral-100 text-neutral-100 bg-neutral-900/30"
               : "border-transparent text-neutral-400 hover:text-neutral-200"
-          }`}
+            }`}
         >
           Editor
         </button>
         <button
           onClick={() => setActiveTab("preview")}
-          className={`flex-1 py-3 text-center text-xs font-semibold border-b-2 transition ${
-            activeTab === "preview"
+          className={`flex-1 py-3 text-center text-xs font-semibold border-b-2 transition ${activeTab === "preview"
               ? "border-neutral-100 text-neutral-100 bg-neutral-900/30"
               : "border-transparent text-neutral-400 hover:text-neutral-200"
-          }`}
+            }`}
         >
           Preview
         </button>
@@ -414,29 +412,29 @@ export default function LiveEditorPanel({
       <div className="flex-1 flex overflow-hidden">
         {/* Left pane: Textarea Editor */}
         <div className={`w-full md:w-1/2 border-r border-neutral-850 flex flex-col h-full bg-neutral-900/10 ${activeTab === "editor" ? "flex" : "hidden md:flex"}`}>
-          
+
           {/* Dynamic Formatting Toolbar based on format */}
           {((format === "markdown" && MARKDOWN_TOOLBAR_ITEMS) ||
             (format === "html" && HTML_TOOLBAR_ITEMS) ||
             (format === "mermaid" && MERMAID_TOOLBAR_ITEMS)) && (
-            <div className="flex items-center space-x-1 px-4 py-2 border-b border-neutral-850 bg-neutral-900/40 overflow-x-auto scrollbar-none">
-              {(format === "markdown" ? MARKDOWN_TOOLBAR_ITEMS :
-                format === "html" ? HTML_TOOLBAR_ITEMS :
-                MERMAID_TOOLBAR_ITEMS).map((item, idx) => {
-                const IconComponent = item.icon;
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => handleInsertText(item.syntax)}
-                    title={item.tooltip}
-                    className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition"
-                  >
-                    <IconComponent className="w-3.5 h-3.5" />
-                  </button>
-                );
-              })}
-            </div>
-          )}
+              <div className="flex items-center space-x-1 px-4 py-2 border-b border-neutral-850 bg-neutral-900/40 overflow-x-auto scrollbar-none">
+                {(format === "markdown" ? MARKDOWN_TOOLBAR_ITEMS :
+                  format === "html" ? HTML_TOOLBAR_ITEMS :
+                    MERMAID_TOOLBAR_ITEMS).map((item, idx) => {
+                      const IconComponent = item.icon;
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => handleInsertText(item.syntax)}
+                          title={item.tooltip}
+                          className="p-1.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition"
+                        >
+                          <IconComponent className="w-3.5 h-3.5" />
+                        </button>
+                      );
+                    })}
+              </div>
+            )}
 
           <textarea
             id="editor-textarea"
@@ -462,7 +460,7 @@ export default function LiveEditorPanel({
 
             {/* Markdown Preview Renderer */}
             {format === "markdown" && (
-              <div 
+              <div
                 className="p-4 md:p-8 prose prose-invert max-w-none text-sm text-neutral-300"
                 dangerouslySetInnerHTML={{ __html: htmlPreview }}
               />
@@ -474,7 +472,7 @@ export default function LiveEditorPanel({
                 {mermaidError ? (
                   <p className="text-xs text-neutral-500 font-mono">{mermaidError}</p>
                 ) : svgContent ? (
-                  <div 
+                  <div
                     className="w-full max-w-full flex items-center justify-center"
                     dangerouslySetInnerHTML={{ __html: svgContent }}
                   />

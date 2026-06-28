@@ -13,6 +13,7 @@ const allowedOrigins = [
   "https://pdfphile-v1.onrender.com",
   "https://pdfphile-1.onrender.com",
   "http://localhost:5173",
+  "http://localhost:5174",
 ];
 
 app.use(

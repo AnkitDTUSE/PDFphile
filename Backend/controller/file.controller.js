@@ -73,8 +73,6 @@ const convertHtml = asyncHandler(async (req, res) => {
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--disable-gpu",
-        "--no-zygote",
-        "--single-process",
       ],
     });
 
@@ -110,7 +108,7 @@ const convertHtml = asyncHandler(async (req, res) => {
   } catch (err) {
     if (browser) await browser.close();
     cleanupTempFiles(file, outputPath);
-    throw new apiError(500, "error while converting HTML file");
+    throw new apiError(500, `error while converting HTML file ${err}`);
   }
 });
 
