@@ -5,7 +5,7 @@ import Logo from "../assets/logo.png";
 export default function Sidebar({ user, onLogOut, onOpenLogin, isOpen, onClose }) {
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between h-screen transition-transform duration-300 md:sticky md:top-14 md:h-[calc(100vh-3.5rem)] md:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between h-dvh transition-transform duration-300 md:sticky md:top-14 md:h-[calc(100dvh-3.5rem)] md:translate-x-0 ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >

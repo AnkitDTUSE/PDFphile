@@ -260,7 +260,7 @@ export default function LiveEditorPanel({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-neutral-950 text-neutral-200">
+    <div className="flex flex-col h-full bg-neutral-950 text-neutral-200">
       {/* Top Header bar */}
       <div className="h-14 border-b border-neutral-850 flex items-center justify-between px-3 md:px-6 bg-neutral-900">
         <div className="flex items-center space-x-2 md:space-x-4 min-w-0">

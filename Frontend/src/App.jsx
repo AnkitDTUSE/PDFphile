@@ -153,7 +153,7 @@ function AppContent() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-neutral-100 font-sans overflow-hidden">
+    <div className="flex flex-col h-dvh bg-slate-950 text-neutral-100 font-sans overflow-hidden">
       {/* Global Top Navbar */}
       <Navbar
         user={user}
