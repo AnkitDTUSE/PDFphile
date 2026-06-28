@@ -9,10 +9,8 @@ import {
   File, 
   X, 
   ArrowRight,
-  Loader,
-  Cpu
+  Loader
 } from "lucide-react";
-import Chatbot from "./Chatbot";
 
 const FORMATS = [
   { id: "html", name: "HTML", ext: ".html,.htm", desc: "HTML web page", icon: Code },
@@ -34,7 +32,6 @@ export default function ConverterDashboard({
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState(null);
   const [error, setError] = useState("");
-  const [showChatbot, setShowChatbot] = useState(false);
   const fileInputRef = useRef(null);
 
   const activeFormatInfo = FORMATS.find(f => f.id === selectedFormat);
@@ -99,24 +96,16 @@ export default function ConverterDashboard({
   const supportsDirectEditor = ["html", "mermaid", "markdown"].includes(selectedFormat);
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-6">
-      <div className="flex items-between flex-col justify-center mb-10">
+    <div className="max-w-4xl mx-auto py-8 px-4 md:py-12 md:px-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+        <div>
           <h1 className="text-2xl font-semibold text-slate-100 tracking-tight mb-2">
             Convert Files to PDF
           </h1>
-    
           <p className="text-sm text-slate-400">
             Select a format, drop your document, and get a rendered PDF. Fast, local, and private.
           </p>
-        {user && (
-          <button
-            onClick={() => setShowChatbot(prev => !prev)}
-            className="w-fit ml-auto mt-2 flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-slate-300 border border-slate-800 hover:border-slate-700 px-3.5 py-2 rounded transition"
-          >
-            <Cpu className="w-3.5 h-3.5 text-slate-400" />
-            <span>{showChatbot ? 'Hide Chatbot' : 'Open Chatbot'}</span>
-          </button>
-        )}
+        </div>
       </div>
 
       {/* Format Selector Grid */}
@@ -148,14 +137,14 @@ export default function ConverterDashboard({
       </div>
 
       {/* Upload Box / Dropzone */}
-      <div className="bg-slate-900 border border-slate-800 rounded-md p-8">
+      <div className="bg-slate-900 border border-slate-800 rounded-md p-4 md:p-8">
         <div
           onDragEnter={handleDrag}
           onDragOver={handleDrag}
           onDragLeave={handleDrag}
           onDrop={handleDrop}
           onClick={() => !file && fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-md p-10 flex flex-col items-center justify-center cursor-pointer transition ${
+          className={`border-2 border-dashed rounded-md p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition ${
             dragActive 
               ? "border-slate-300 bg-slate-800" 
               : file 
@@ -216,7 +205,7 @@ export default function ConverterDashboard({
 
         {/* Action Buttons */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-between border-t border-slate-800/80 pt-6 gap-4">
-          <div>
+          <div className="text-center sm:text-left">
             {supportsDirectEditor && (
               <p className="text-xs text-slate-400 font-normal">
                 Want to write diagram code or text?{" "}
@@ -249,29 +238,6 @@ export default function ConverterDashboard({
           </button>
         </div>
       </div>
-
-      {showChatbot && user && (
-        <div className="fixed bottom-6 right-6 w-96 h-[480px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-6rem)] bg-slate-900 border border-slate-800 rounded-lg shadow-2xl z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-300">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-slate-950 border-b border-slate-800">
-            <div className="flex items-center space-x-2">
-              <Cpu className="w-4 h-4 text-slate-400" />
-              <span className="text-xs font-semibold text-slate-200">AI Assistant</span>
-            </div>
-            <button
-              onClick={() => setShowChatbot(false)}
-              className="text-slate-500 hover:text-slate-300 transition p-1"
-              aria-label="Close chatbot"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          {/* Content */}
-          <div className="flex-1 overflow-hidden p-4">
-            <Chatbot user={user} onOpenLogin={onOpenLogin} isFloating />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

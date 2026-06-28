@@ -11,13 +11,10 @@ import {
   X,
   AlertCircle
 } from "lucide-react";
-import Chatbot from "./Chatbot";
-
 export default function HistoryWorkspace({ historyList, onClearHistory, user, onOpenLogin }) {
   const [summarizingId, setSummarizingId] = useState(null);
   const [summaryData, setSummaryData] = useState(null);
   const [error, setError] = useState("");
-  const [showChatbot, setShowChatbot] = useState(false);
   const [selectedFileForAi, setSelectedFileForAi] = useState(null);
 
   const handleSummarizeClick = (item) => {
@@ -70,16 +67,9 @@ export default function HistoryWorkspace({ historyList, onClearHistory, user, on
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-6">
-      <div className="flex items-center justify-between mb-10">
+    <div className="max-w-4xl mx-auto py-8 px-4 md:py-12 md:px-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
         <div>
-          <button
-            onClick={() => setShowChatbot(prev => !prev)}
-            className="flex items-center space-x-1.5 bg-neutral-900 hover:bg-neutral-800 text-xs font-semibold text-neutral-300 border border-neutral-800 hover:border-neutral-700 px-3 py-1.5 rounded transition mb-4"
-          >
-            <Cpu className="w-3 h-3 text-neutral-400" />
-            <span>{showChatbot ? 'Hide' : 'Open'} Chatbot</span>
-          </button>
           <h1 className="text-2xl font-semibold text-neutral-100 tracking-tight mb-2">
             My Library & History
           </h1>
@@ -90,7 +80,7 @@ export default function HistoryWorkspace({ historyList, onClearHistory, user, on
         {historyList.length > 0 && (
           <button
             onClick={onClearHistory}
-            className="flex items-center space-x-2 text-xs text-neutral-500 hover:text-red-400 transition"
+            className="self-end md:self-auto flex items-center space-x-2 text-xs text-neutral-500 hover:text-red-400 transition"
           >
             <Trash2 className="w-4 h-4" />
             <span>Clear History</span>
@@ -108,14 +98,14 @@ export default function HistoryWorkspace({ historyList, onClearHistory, user, on
           {historyList.map((item) => (
             <div
               key={item.id}
-              className="bg-neutral-900 border border-neutral-800 rounded-md p-4 flex items-center justify-between hover:border-neutral-700 transition"
+              className="bg-neutral-900 border border-neutral-800 rounded-md p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-neutral-700 transition"
             >
-              <div className="flex items-center space-x-4">
-                <div className="w-9 h-9 bg-neutral-950 rounded flex items-center justify-center border border-neutral-800">
+              <div className="flex items-center space-x-4 min-w-0">
+                <div className="w-9 h-9 bg-neutral-950 rounded flex-shrink-0 flex items-center justify-center border border-neutral-800">
                   <FileText className="w-4 h-4 text-neutral-400" />
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-neutral-200">{item.filename}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-neutral-200 truncate">{item.filename}</p>
                   <div className="flex items-center space-x-2 text-[10px] text-neutral-500 mt-1">
                     <span>{item.format?.toUpperCase()}</span>
                     <span>•</span>
@@ -124,11 +114,11 @@ export default function HistoryWorkspace({ historyList, onClearHistory, user, on
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center sm:justify-end self-end sm:self-auto">
                 <button
                   onClick={() => handleSummarizeClick(item)}
                   disabled={summarizingId === item.id}
-                  className="flex items-center space-x-1.5 bg-neutral-950 hover:bg-neutral-800 text-[10px] font-semibold text-neutral-300 border border-neutral-800 hover:border-neutral-700 px-3 py-1.5 rounded transition"
+                  className="flex items-center space-x-1.5 bg-neutral-950 hover:bg-neutral-800 text-[10px] font-semibold text-neutral-300 border border-neutral-800 hover:border-neutral-700 px-3 py-1.5 rounded transition w-full sm:w-auto justify-center"
                 >
                   {summarizingId === item.id ? (
                     <Loader className="w-3 h-3 animate-spin text-neutral-400" />
@@ -143,15 +133,10 @@ export default function HistoryWorkspace({ historyList, onClearHistory, user, on
         </div>
       )}
 
-      {/* Chatbot component */}
-      {showChatbot && (
-        <div className="mt-6">
-          <Chatbot user={user} onOpenLogin={onOpenLogin} />
-        </div>
-      )}
+
       {selectedFileForAi && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-neutral-900 border border-neutral-800 max-w-lg w-full rounded-md shadow-lg p-6 relative">
+          <div className="bg-neutral-900 border border-neutral-800 max-w-lg w-full rounded-md shadow-lg p-4 md:p-6 relative max-h-[calc(100vh-2rem)] overflow-y-auto">
             <button
               onClick={() => {
                 setSelectedFileForAi(null);

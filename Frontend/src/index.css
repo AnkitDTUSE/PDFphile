@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-slate-950 text-slate-100 antialiased selection:bg-slate-800 selection:text-white;
+  html, body {
+    @apply bg-slate-950 text-slate-100 antialiased selection:bg-slate-800 selection:text-white h-screen overflow-hidden;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }

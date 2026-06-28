@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
+import { X } from "lucide-react";
 import Sidebar from "./components/Sidebar";
 import ConverterDashboard from "./components/ConverterDashboard";
 import LiveEditorPanel from "./components/LiveEditorPanel";
 import HistoryWorkspace from "./components/HistoryWorkspace";
 import AuthModal from "./components/AuthModal";
+import Navbar from "./components/Navbar";
+import Chatbot from "./components/Chatbot";
 
 function AppContent() {
   const navigate = useNavigate();
@@ -15,6 +18,8 @@ function AppContent() {
   // User Authentication State
   const [user, setUser] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
 
   // Local storage history state
   const [historyList, setHistoryList] = useState(() => {
@@ -148,48 +153,94 @@ function AppContent() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-neutral-100 font-sans">
-      <Sidebar
+    <div className="flex flex-col h-screen bg-slate-950 text-neutral-100 font-sans overflow-hidden">
+      {/* Global Top Navbar */}
+      <Navbar
         user={user}
         onLogOut={handleLogOut}
         onOpenLogin={() => setIsAuthModalOpen(true)}
+        onToggleChatbot={() => setShowChatbot((prev) => !prev)}
+        showChatbot={showChatbot}
+        onOpenMobileMenu={() => setIsSidebarOpen(true)}
       />
 
-      <main className="flex-1 overflow-auto h-screen">
-        <Routes>
-          <Route path="/" element={<Navigate to="/convert" replace />} />
-          <Route
-            path="/convert"
-            element={
-              <ConverterDashboard
-                selectedFormat={selectedFormat}
-                setSelectedFormat={setSelectedFormat}
-                onConvertFile={(file, onSuccess) => handleConvertFile(file, onSuccess, selectedFormat)}
-                onOpenEditor={() => navigate(`/editor/${selectedFormat}`)}
-                conversionLoading={conversionLoading}
-                user={user}
-                onOpenLogin={() => setIsAuthModalOpen(true)}
-              />
-            }
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Sidebar Backdrop for Mobile Drawer */}
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/60 z-40 md:hidden"
+            onClick={() => setIsSidebarOpen(false)}
           />
-          <Route
-            path="/editor/:format"
-            element={<EditorWrapper onConvertContent={handleConvertContent} conversionLoading={conversionLoading} />}
-          />
-          <Route
-            path="/library"
-            element={
-              <HistoryWorkspace
-                historyList={historyList}
-                onClearHistory={handleClearHistory}
-                user={user}
-                onOpenLogin={() => setIsAuthModalOpen(true)}
-              />
-            }
-          />
-          <Route path="*" element={<Navigate to="/convert" replace />} />
-        </Routes>
-      </main>
+        )}
+
+        <Sidebar
+          user={user}
+          onLogOut={handleLogOut}
+          onOpenLogin={() => setIsAuthModalOpen(true)}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+
+        <main className="flex-1 overflow-auto bg-slate-950">
+          <Routes>
+            <Route path="/" element={<Navigate to="/convert" replace />} />
+            <Route
+              path="/convert"
+              element={
+                <ConverterDashboard
+                  selectedFormat={selectedFormat}
+                  setSelectedFormat={setSelectedFormat}
+                  onConvertFile={(file, onSuccess) => handleConvertFile(file, onSuccess, selectedFormat)}
+                  onOpenEditor={() => navigate(`/editor/${selectedFormat}`)}
+                  conversionLoading={conversionLoading}
+                  user={user}
+                  onOpenLogin={() => setIsAuthModalOpen(true)}
+                />
+              }
+            />
+            <Route
+              path="/editor/:format"
+              element={<EditorWrapper onConvertContent={handleConvertContent} conversionLoading={conversionLoading} />}
+            />
+            <Route
+              path="/library"
+              element={
+                <HistoryWorkspace
+                  historyList={historyList}
+                  onClearHistory={handleClearHistory}
+                  user={user}
+                  onOpenLogin={() => setIsAuthModalOpen(true)}
+                />
+              }
+            />
+            <Route path="*" element={<Navigate to="/convert" replace />} />
+          </Routes>
+        </main>
+      </div>
+
+      {/* Global AI Chatbot floating drawer */}
+      {showChatbot && (
+        <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 w-96 h-[480px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-4rem)] bg-slate-900 border border-slate-800 rounded-lg shadow-2xl z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-300">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 bg-slate-950 border-b border-slate-800">
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-xs font-semibold text-slate-200">AI Assistant Chatbot</span>
+            </div>
+            <button
+              onClick={() => setShowChatbot(false)}
+              className="text-slate-500 hover:text-slate-300 transition p-1"
+              aria-label="Close chatbot"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          {/* Content */}
+          <div className="flex-1 overflow-hidden p-4">
+            <Chatbot user={user} onOpenLogin={() => setIsAuthModalOpen(true)} isFloating />
+          </div>
+        </div>
+      )}
 
       <AuthModal
         isOpen={isAuthModalOpen}
@@ -212,6 +263,7 @@ function EditorWrapper({ onConvertContent, conversionLoading }) {
 
   return (
     <LiveEditorPanel
+      key={format}
       format={format}
       onBack={() => navigate("/convert")}
       onConvertContent={onConvertContent}
